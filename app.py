@@ -118,35 +118,53 @@ def extract_from_url(url):
             image = urljoin(url, image)
 
     # ================== Seccion ==================
-    section = (
-        meta('meta[property="article:section"]')
-        or meta('meta[name="section"]')
-        or meta('meta[name="category"]')
-        or meta('meta[property="article:tag"]')
-    )
+    # Estrategia: PRIMERO intentar desde la URL (es lo mas confiable),
+    # luego fallback a meta tags y breadcrumbs.
+    section = ""
 
-    # Buscar en breadcrumbs si no se encontro
+    # 1. Extraer del path de la URL
+    # El primer segmento del path despues del dominio suele ser la seccion
+    # Ej: https://www.elespectador.com/la-red-zoocial/gatos/... -> "la-red-zoocial"
+    #     https://www.elespectador.com/deportes/futbol-mundial/... -> "deportes"
+    try:
+        parts = [p for p in urlparse(url).path.split("/") if p]
+        # Palabras a ignorar (no son secciones reales)
+        skip = {
+            "articulo", "article", "post", "noticia", "noticias",
+            "news", "story", "stories", "amp", "video", "videos",
+            "blog", "tag", "tags", "categoria", "category",
+        }
+        for part in parts:
+            part_lower = part.lower()
+            # Saltar segmentos que son solo numeros (IDs, anios)
+            if part.replace("-", "").isdigit():
+                continue
+            # Saltar palabras genericas
+            if part_lower in skip:
+                continue
+            # Saltar anios (2024, 2025, 2026...)
+            if len(part) == 4 and part.isdigit() and part.startswith("20"):
+                continue
+            # Encontrado: usar este segmento como seccion
+            section = part.replace("-", " ")
+            break
+    except Exception:
+        pass
+
+    # 2. Si no se encontro nada util en la URL, intentar meta tags
+    if not section:
+        section = (
+            meta('meta[property="article:section"]')
+            or meta('meta[name="section"]')
+            or meta('meta[name="category"]')
+            or meta('meta[property="article:tag"]')
+        )
+
+    # 3. Ultimo fallback: breadcrumbs
     if not section:
         breadcrumb = soup.select_one('[class*="breadcrumb"] a, nav.breadcrumb a, ol[itemtype*="BreadcrumbList"] a')
         if breadcrumb:
             section = breadcrumb.get_text(strip=True)
-
-    # Fallback: extraer del path de la URL
-    if not section:
-        try:
-            parts = [p for p in urlparse(url).path.split("/") if p]
-            # Ignorar palabras comunes que no son secciones
-            skip = {"articulo", "article", "post", "noticia", "news", "story", "20", "21", "22", "23", "24", "25", "26"}
-            for part in parts:
-                if (
-                    not part.replace("-", "").isdigit()
-                    and not part.lower() in skip
-                    and not part.startswith("20")  # 2024, 2025...
-                ):
-                    section = part.replace("-", " ")
-                    break
-        except Exception:
-            pass
 
     return {
         "title": title.strip(),
