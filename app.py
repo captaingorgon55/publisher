@@ -194,7 +194,16 @@ def parse_srcset_max(srcset):
 # =====================================================
 
 st.subheader("1. URL del articulo")
-url = st.text_input("URL", placeholder="https://www.elespectador.com/...", label_visibility="collapsed")
+
+col_url, col_reset = st.columns([4, 1])
+with col_url:
+    url = st.text_input("URL", placeholder="https://www.elespectador.com/...", label_visibility="collapsed")
+with col_reset:
+    if st.button("🔄 Nueva", use_container_width=True, help="Limpiar todo y empezar de nuevo"):
+        # Limpiar TODA la sesion
+        for key in list(st.session_state.keys()):
+            del st.session_state[key]
+        st.rerun()
 
 if st.button("Extraer y generar tarjeta", type="primary", use_container_width=True):
     if not url:
