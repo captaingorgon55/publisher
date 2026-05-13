@@ -340,7 +340,7 @@ def draw_section_badge(canvas, section_text, position, font, with_icon=True):
         banner = trim_transparent(banner)
 
         # Altura objetivo del banner: proporcional al tamano de fuente solicitado
-        target_h = int(font.size * 1.2)  # mas compacto
+        target_h = int(font.size * 1.6)  # mas compacto
         ratio = target_h / banner.height
         new_w = int(banner.width * ratio)
         banner = banner.resize((new_w, target_h), Image.LANCZOS)
