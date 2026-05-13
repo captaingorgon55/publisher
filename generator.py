@@ -32,7 +32,7 @@ GRAY_BG = (235, 235, 235)        # fondo de la card en plantilla 2
 PURPLE = (66, 28, 87)            # morado plantilla atencion
 
 # Tamanos de logos (compartidos entre plantillas)
-LOGO_EE_HEIGHT = 140
+LOGO_EE_HEIGHT = 80
 SOCIAL_ICONS_HEIGHT = 80
 
 
@@ -40,26 +40,48 @@ SOCIAL_ICONS_HEIGHT = 80
 # UTILIDADES DE IMAGEN
 # ============================================================
 
+# ============================================================
+# FUENTES
+# ============================================================
+# ============================================================
+# FUENTES
+# ============================================================
+
+FONTS_DIR = os.path.join(ASSETS_DIR, "fonts")
+
+ABRIL_TITLING_PATH = os.path.join(FONTS_DIR, "abriltitling.ttf")
+
+
 def load_font(size, bold=True):
-    if bold:
-        candidates = [
-            "C:/Windows/Fonts/georgiab.ttf",
-            "C:/Windows/Fonts/arialbd.ttf",
-            "/System/Library/Fonts/Supplemental/Georgia Bold.ttf",
-            "/usr/share/fonts/truetype/dejavu/DejaVuSerif-Bold.ttf",
-            "/usr/share/fonts/truetype/liberation/LiberationSerif-Bold.ttf",
-        ]
-    else:
-        candidates = [
-            "C:/Windows/Fonts/georgia.ttf",
-            "C:/Windows/Fonts/arial.ttf",
-            "/System/Library/Fonts/Supplemental/Georgia.ttf",
-            "/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf",
-            "/usr/share/fonts/truetype/liberation/LiberationSerif-Regular.ttf",
-        ]
-    for path in candidates:
+    """
+    Usa Abril Titling como fuente principal.
+    """
+
+    # ========================================================
+    # Abril Titling
+    # ========================================================
+
+    if os.path.exists(ABRIL_TITLING_PATH):
+        try:
+            return ImageFont.truetype(ABRIL_TITLING_PATH, size)
+        except Exception:
+            pass
+
+    # ========================================================
+    # Fallback del sistema
+    # ========================================================
+
+    fallback_candidates = [
+        "C:/Windows/Fonts/georgiab.ttf",
+        "C:/Windows/Fonts/arialbd.ttf",
+        "/System/Library/Fonts/Supplemental/Georgia Bold.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSerif-Bold.ttf",
+    ]
+
+    for path in fallback_candidates:
         if os.path.exists(path):
             return ImageFont.truetype(path, size)
+
     return ImageFont.load_default()
 
 
@@ -340,7 +362,7 @@ def draw_section_badge(canvas, section_text, position, font, with_icon=True):
         banner = trim_transparent(banner)
 
         # Altura objetivo del banner: proporcional al tamano de fuente solicitado
-        target_h = int(font.size * 1.6)  # mas compacto
+        target_h = int(font.size * 1.7)  # mas compacto
         ratio = target_h / banner.height
         new_w = int(banner.width * ratio)
         banner = banner.resize((new_w, target_h), Image.LANCZOS)
@@ -464,16 +486,16 @@ def render_classic(source_image, section, title, zoom=1.0, offset_x=0.5, offset_
     line_bbox = draw.textbbox((0, 0), "Ag", font=title_font)
     line_h = (line_bbox[3] - line_bbox[1]) * 1.25
     total_h = int(line_h * len(lines))
-    y_start = canvas_h - 340 - total_h
+    y_start = canvas_h - 220 - total_h
 
     # Linea roja
     draw.rectangle([80, y_start, 86, y_start + total_h], fill=RED)
     draw_lines(draw, lines, title_font, 106, y_start, WHITE)
 
     # Footer
-    footer_y = canvas_h - 35              # mas pegado al borde inferior
+    footer_y = canvas_h - 60             # mas pegado al borde inferior
     img, _ = paste_asset(img, SOCIAL_ICONS_PATH, SOCIAL_ICONS_HEIGHT, (75, footer_y), "bottom-left")
-    img, _ = paste_asset(img, LOGO_EE_PATH, LOGO_EE_HEIGHT, (canvas_w - 30, footer_y), "bottom-right")
+    img, _ = paste_asset(img, LOGO_EE_PATH, LOGO_EE_HEIGHT, (canvas_w - 60, footer_y), "bottom-right")
 
     return img
 
@@ -608,8 +630,8 @@ def render_with_cta(source_image, section, title, zoom=1.0, offset_x=0.5, offset
     draw_cta_box(draw, (80, cta_y), cta_font, CANVAS_SIZE)
 
     # Logo EE solo (sin iconos sociales en esta plantilla)
-    footer_y = canvas_h - 70
-    img, _ = paste_asset(img, LOGO_EE_PATH, LOGO_EE_HEIGHT - 20, (canvas_w - 75, footer_y), "bottom-right")
+    footer_y = canvas_h - 60
+    img, _ = paste_asset(img, LOGO_EE_PATH, LOGO_EE_HEIGHT, (canvas_w - 60, footer_y), "bottom-right")
 
     return img
 
@@ -684,8 +706,8 @@ def render_attention(source_image, section, title, zoom=1.0, offset_x=0.5, offse
     cta_y = canvas_h - 130
     draw_cta_box(draw, (80, cta_y), cta_font, CANVAS_SIZE)
 
-    footer_y = canvas_h - 70
-    canvas, _ = paste_asset(canvas, LOGO_EE_PATH, LOGO_EE_HEIGHT - 30, (canvas_w - 75, footer_y), "bottom-right")
+    footer_y = canvas_h - 60
+    canvas, _ = paste_asset(canvas, LOGO_EE_PATH, LOGO_EE_HEIGHT, (canvas_w - 60, footer_y), "bottom-right")
 
     return canvas
 
